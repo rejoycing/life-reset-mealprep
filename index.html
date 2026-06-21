@@ -231,10 +231,18 @@ function renderWeek(){
         const dish=dishById(did);
         h+=`<span class="chip">${esc(dish?dish.name:"(已刪除)")}<button onclick="removeDish(${di},'${slot}','${did}')">✕</button></span>`;
       });
-      // add selector
+      // add selector (grouped by meal)
       h+=`<br><select onchange="addDish(${di},'${slot}',this.value);this.value='';">
         <option value="">＋ 加入菜式…</option>`;
-      state.dishes.forEach(d=>{ h+=`<option value="${d.id}">${esc(MEALS[d.meal]||"")}｜${esc(d.name)}</option>`; });
+      ["b","l","d"].forEach(m=>{
+        const dl=state.dishes.filter(d=>d.meal===m);
+        if(!dl.length) return;
+        h+=`<optgroup label="${MEALS[m]}">`;
+        dl.forEach(d=>{ h+=`<option value="${d.id}">${esc(d.name)}</option>`; });
+        h+=`</optgroup>`;
+      });
+      const others=state.dishes.filter(d=>!["b","l","d"].includes(d.meal));
+      if(others.length){ h+=`<optgroup label="其他">`; others.forEach(d=>{ h+=`<option value="${d.id}">${esc(d.name)}</option>`; }); h+=`</optgroup>`; }
       h+=`</select></div>`;
     });
     h+=`</div>`;
