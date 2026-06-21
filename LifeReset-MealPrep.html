@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生命重整 ｜ 健康備餐助手</title>
+<style>
+:root{
+  --teal:#2C5F66; --sage:#84B59F; --slate:#50808E; --cream:#F7F4EE;
+  --ink:#33383A; --line:#D8E0DC; --warn:#B85042; --gold:#E0B16A; --ok:#5a9367;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;}
+header{background:linear-gradient(135deg,var(--teal),var(--slate));color:#fff;padding:18px 24px;}
+header h1{font-size:1.5em;font-weight:700;}
+header p{font-size:.85em;opacity:.85;margin-top:2px;}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;background:var(--teal);padding:0 16px;position:sticky;top:0;z-index:20;}
+.tab{padding:11px 16px;color:#cfe0da;cursor:pointer;border:none;background:none;font-size:.92em;font-family:inherit;border-bottom:3px solid transparent;transition:.15s;}
+.tab:hover{color:#fff;}
+.tab.active{color:#fff;border-bottom-color:var(--gold);font-weight:700;}
+main{max-width:980px;margin:0 auto;padding:22px 18px 80px;}
+.panel{display:none;animation:fade .25s;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+h2{color:var(--teal);font-size:1.3em;margin:8px 0 14px;}
+h3{color:var(--slate);font-size:1.05em;margin:18px 0 8px;border-left:4px solid var(--sage);padding-left:10px;}
+.card{background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+label{font-size:.88em;color:var(--slate);font-weight:600;display:block;margin-bottom:4px;}
+input,select,textarea{font-family:inherit;font-size:.95em;padding:7px 9px;border:1px solid var(--line);border-radius:8px;width:100%;background:#fff;color:var(--ink);}
+input[type=number]{width:80px;}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.row>div{flex:1;min-width:110px;}
+button.btn{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:inherit;font-size:.9em;cursor:pointer;transition:.15s;}
+button.btn:hover{background:var(--slate);}
+button.btn.ghost{background:#eef4f1;color:var(--teal);}
+button.btn.ghost:hover{background:#e0ebe6;}
+button.btn.danger{background:#f3ddd8;color:var(--warn);}
+button.mini{font-size:.8em;padding:4px 9px;border-radius:6px;border:none;cursor:pointer;background:#eef4f1;color:var(--slate);}
+button.mini.del{background:#f6e3df;color:var(--warn);}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.9em;}
+th{background:var(--slate);color:#fff;text-align:left;padding:8px 10px;font-weight:600;}
+td{border:1px solid var(--line);padding:6px 9px;vertical-align:middle;}
+tr:nth-child(even) td{background:#f6f9f7;}
+td input,td select{padding:5px 7px;border-radius:6px;}
+.trip-head{display:flex;align-items:center;gap:10px;margin:18px 0 6px;}
+.trip-head .badge{background:var(--gold);color:#fff;border-radius:20px;padding:3px 12px;font-size:.85em;font-weight:700;}
+.cat-tag{display:inline-block;font-size:.74em;padding:1px 8px;border-radius:10px;background:#eef4f1;color:var(--slate);}
+.check-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px dashed var(--line);}
+.check-item:last-child{border-bottom:none;}
+.check-item input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--teal);}
+.check-item.done label{text-decoration:line-through;color:#9aa8a3;}
+.check-item .qty{color:var(--teal);font-weight:700;margin-left:auto;font-size:.95em;white-space:nowrap;}
+.note{font-size:.8em;color:#8a9590;}
+.pill{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.8em;font-weight:600;}
+.pill.need{background:#f6e3df;color:var(--warn);}
+.pill.ok{background:#e2efe6;color:var(--ok);}
+.stars{font-size:1.4em;color:var(--gold);cursor:pointer;letter-spacing:2px;user-select:none;}
+.banner{background:#EEF4F1;border-left:5px solid var(--sage);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.88em;margin-bottom:14px;}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px;}
+.summary{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0;}
+.stat{background:#fff;border-radius:10px;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,.05);text-align:center;flex:1;min-width:110px;}
+.stat .n{font-size:1.6em;font-weight:700;color:var(--teal);}
+.stat .l{font-size:.8em;color:var(--slate);}
+.day-card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.day-card h4{color:var(--teal);margin-bottom:8px;font-size:1.05em;}
+.slot{margin:8px 0;}
+.slot .slabel{font-size:.82em;color:var(--slate);font-weight:600;display:inline-block;width:42px;}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#eef4f1;color:var(--teal);border-radius:16px;padding:3px 6px 3px 12px;margin:3px 4px 3px 0;font-size:.85em;}
+.chip button{border:none;background:#d7e6e0;color:var(--slate);border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:.8em;line-height:1;}
+.slot select{display:inline-block;width:auto;max-width:260px;margin-top:4px;font-size:.85em;padding:4px 6px;}
+.dish-card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.dish-card .dhead{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+.dish-card .dhead input{flex:1;font-weight:700;color:var(--teal);}
+.ref{font-size:.82em;color:#5a6b66;background:#fbf7ef;border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;margin:8px 0;}
+.scripture{max-width:980px;margin:10px auto 30px;padding:14px 22px;text-align:center;color:var(--slate);
+  font-style:italic;font-size:.95em;border-top:1px solid var(--line);}
+.scripture .ref-cite{display:block;font-style:normal;font-size:.82em;color:#9aa8a3;margin-top:4px;}
+@media print{.tabs,.toolbar,.tab,header .noprint{display:none!important;}.panel{display:block!important;}body{background:#fff;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>� 生命重整 ｜ 健康備餐助手</h1>
+  <p>Life Reset · Healthy Meal Prep　—　由餐單資料庫自動產生購物清單（以「份」計算）｜得基輔康會（DACARS）</p>
+</header>
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="week">① 每週餐單</button>
+  <button class="tab" data-tab="dishes">② 餐單資料庫</button>
+  <button class="tab" data-tab="shopping">③ 購物清單</button>
+  <button class="tab" data-tab="inventory">④ 乾貨庫存</button>
+  <button class="tab" data-tab="ratings">⑤ 餐膳評分</button>
+  <button class="tab" data-tab="principles">📖 理念 &amp; 鼓勵</button>
+</div>
+<main>
+  <section class="panel active" id="panel-week"></section>
+  <section class="panel" id="panel-dishes"></section>
+  <section class="panel" id="panel-shopping"></section>
+  <section class="panel" id="panel-inventory"></section>
+  <section class="panel" id="panel-ratings"></section>
+  <section class="panel" id="panel-principles"></section>
+</main>
+<footer class="scripture" id="scripture"></footer>
+<script>
+"use strict";
+const KEY="dacars_mealprep_v2";
+const CATS=["蛋白質","碳水","蔬菜","水果","油脂調味","乾貨常備"];
+const MEALS={b:"早餐",l:"午餐",d:"晚餐"};
+const DAYS=["星期一","星期二","星期三","星期四","星期五","星期六","星期日"];
+
+// ---------- default dish database (from 一週餐膳建議) ----------
+// ingredient: [name, category, portionsPerPerson, unit, staple]
+function defaultDishes(){
+  const D=(id,name,meal,ings)=>({id,name,meal,ingredients:ings.map(a=>({name:a[0],cat:a[1],portions:a[2],unit:a[3],staple:!!a[4]}))});
+  return [
+    D("d1","牛油果欖油多士 + 沙律菜 + 水果","b",[["牛油果","油脂調味",0.5,"個",false],["全麥麵包","碳水",1,"份",false],["水耕沙律菜","蔬菜",1,"份",false],["蘋果/梨","水果",1,"個",false]]),
+    D("d2","薑黃雞肉 + 雙色椰菜花飯 + 青菜","l",[["雞肉","蛋白質",1,"份",false],["椰菜花","碳水",1,"份",false],["青菜","蔬菜",1,"份",false],["薑黃粉+黑胡椒","油脂調味",0,"適量",true]]),
+    D("d3","羅宋蔬菜牛肉湯米線 + 青菜","d",[["牛肉","蛋白質",1,"份",false],["米線","碳水",1,"份",true],["雜菜(番茄甘荀洋蔥)","蔬菜",1,"份",false],["青菜","蔬菜",1,"份",false]]),
+    D("d4","白麵豉銀芽旺菜豬柳煲 + 蒸番薯 + 香橙","b",[["豬肉","蛋白質",1,"份",false],["銀芽","蔬菜",0.5,"份",false],["旺菜/小棠菜","蔬菜",1,"份",false],["番薯","碳水",1,"份",false],["味噌/白麵豉","油脂調味",0,"適量",true],["香橙","水果",1,"個",false]]),
+    D("d5","薑絲冬瓜排骨湯 + 五穀飯 + 青菜","l",[["排骨","蛋白質",1,"份",false],["冬瓜","蔬菜",1,"份",false],["五穀米","碳水",1,"份",true],["青菜","蔬菜",1,"份",false],["生薑","油脂調味",0,"適量",true]]),
+    D("d6","豆腐肉碎蒸滑蛋 + 雜菇菠菜 + 十穀粥","d",[["免治豬肉","蛋白質",0.5,"份",false],["雞蛋","蛋白質",1,"隻",true],["硬豆腐","蛋白質",0.5,"磚",false],["雜菇","蔬菜",0.5,"份",false],["菠菜","蔬菜",1,"份",false],["五穀米","碳水",0.5,"份",true]]),
+    D("d7","水煮蛋 + 青瓜蕃茄芝士沙拉 + 烤南瓜紫薯","b",[["雞蛋","蛋白質",1,"隻",true],["青瓜","蔬菜",0.5,"條",false],["小番茄","蔬菜",0.5,"份",false],["芝士","蛋白質",0.3,"份",false],["南瓜","碳水",0.5,"份",false],["紫薯","碳水",1,"份",false]]),
+    D("d8","清蒸三刀魚 + 蒜茸西蘭花與南瓜 + 水果","l",[["鮮魚(三刀/白肉)","蛋白質",1,"份",false],["西蘭花","蔬菜",1,"份",false],["南瓜","碳水",0.5,"份",false],["藍莓/草莓","水果",0.5,"盒",false],["大蒜","油脂調味",0,"適量",true]]),
+    D("d9","七彩豬肉卷 + 煎山藥","d",[["豬肉","蛋白質",1,"份",false],["甘荀","蔬菜",0.3,"條",false],["粟米荀","蔬菜",0.3,"份",false],["青瓜","蔬菜",0.3,"條",false],["木耳(乾)","乾貨常備",0.1,"份",true],["山藥","碳水",0.5,"份",false]]),
+    D("d10","繽紛彩椒炒雞柳 + 全麥多士 + 番石榴","b",[["雞肉","蛋白質",1,"份",false],["三色椒","蔬菜",1,"個",false],["全麥麵包","碳水",1,"份",false],["番石榴","水果",1,"個",false]]),
+    D("d11","勝瓜粉絲煮雞柳 + 五穀飯","l",[["雞肉","蛋白質",1,"份",false],["勝瓜","蔬菜",0.5,"條",false],["粉絲","碳水",0.5,"份",true],["五穀米","碳水",1,"份",true]]),
+    D("d12","黃薑豆角雞粒 + 南瓜絲洋蔥沙拉","d",[["雞肉","蛋白質",1,"份",false],["豆角","蔬菜",1,"份",false],["南瓜","碳水",0.5,"份",false],["洋蔥","油脂調味",0.5,"個",false],["薑黃粉+黑胡椒","油脂調味",0,"適量",true]]),
+    D("d13","雞絲蕎麥冷麵 + 和風秋葵 + 水果","b",[["雞肉","蛋白質",1,"份",false],["蕎麥麵","碳水",1,"份",true],["秋葵","蔬菜",0.5,"份",false],["和風汁","油脂調味",0,"適量",true],["水果(西柚/葡萄)","水果",1,"份",false]]),
+    D("d14","咖哩雞胸炒豆皮 + 五穀飯","l",[["雞肉","蛋白質",1,"份",false],["鮮豆皮","蛋白質",1,"份",false],["咖哩粉","油脂調味",0,"適量",true],["五穀米","碳水",1,"份",true]]),
+    D("d15","高麗菜雞肉 + 煎豆腐 + 涼拌小黃瓜","d",[["雞肉","蛋白質",1,"份",false],["高麗菜","蔬菜",1,"份",false],["硬豆腐","蛋白質",0.5,"磚",false],["青瓜","蔬菜",0.5,"條",false]]),
+    D("d16","香煎香草雞胸 + 青菜堅果沙拉","b",[["雞肉","蛋白質",1,"份",false],["青菜","蔬菜",1,"份",false],["原味堅果","油脂調味",0.2,"份",true],["香草","油脂調味",0,"適量",true]]),
+    D("d18","泡菜番茄海帶魚柳豆腐湯 + 五穀飯 + 全麥多士","d",[["魚柳","蛋白質",1,"份",false],["泡菜","乾貨常備",0.3,"份",true],["番茄","蔬菜",0.5,"份",false],["海帶","蔬菜",0.5,"份",false],["硬豆腐","蛋白質",0.5,"磚",false],["五穀米","碳水",1,"份",true],["全麥麵包","碳水",0.5,"份",false]]),
+    D("d19","毛豆薏仁鮮菇炒粟米荀 + 紫菜蒟蒻湯麵 + 水果","b",[["毛豆","蛋白質",0.5,"份",false],["薏仁","碳水",0.3,"份",true],["鮮菇","蔬菜",0.5,"份",false],["粟米荀","蔬菜",0.5,"份",false],["蒟蒻麵","碳水",1,"份",true],["紫菜(乾)","乾貨常備",0.2,"份",true],["水果(香蕉/木瓜)","水果",1,"份",false]]),
+    D("d20","三文魚雜菇炊飯 + 青菜","l",[["三文魚","蛋白質",1,"份",false],["雜菇","蔬菜",0.5,"份",false],["五穀米","碳水",1,"份",true],["青菜","蔬菜",1,"份",false]]),
+    D("d21","烤全雞 + 南瓜 + 青菜","d",[["全雞","蛋白質",0.25,"隻",false],["南瓜","碳水",0.5,"份",false],["青菜","蔬菜",1,"份",false]]),
+    D("d22","奇異果（水果）","l",[["奇異果","水果",1,"個",false]])
+  ];
+}
+// default week: each slot = array of dish ids
+function defaultWeek(){
+  return [
+    {b:["d1"], l:["d2"], d:["d3"]},
+    {b:["d4"], l:["d5"], d:["d6"]},
+    {b:["d7"], l:["d8"], d:["d9"]},
+    {b:["d10"],l:["d11"],d:["d12"]},
+    {b:["d13"],l:["d14"],d:["d15"]},
+    {b:["d16"],l:["d13","d22"],d:["d18"]},
+    {b:["d19"],l:["d20"],d:["d21"]}
+  ];
+}
+function defaultState(){
+  return {settings:{people:4,trips:3}, dishes:defaultDishes(), week:defaultWeek(), shopping:{}, inventory:{}, ratings:[]};
+}
+
+let state=load();
+function load(){ try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.dishes&&s.week) return s;}catch(e){} return defaultState(); }
+function save(){ localStorage.setItem(KEY,JSON.stringify(state)); }
+function round(n){ return Math.round(n*100)/100; }
+function esc(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function dishById(id){ return state.dishes.find(d=>d.id===id); }
+
+// ---------- rotating scripture footer (shown on every tab) ----------
+const VERSES=[
+  ["我們日用的飲食，今日賜給我們。","馬太福音 6:11"],
+  ["凡神所造的物都是好的；若感謝著領受，就沒有一樣可棄的。","提摩太前書 4:4"],
+  ["你們要嘗嘗主恩的滋味，便知道他是美善；投靠他的人有福了！","詩篇 34:8"],
+  ["你們或吃或喝，無論做甚麼，都要為榮耀神而行。","哥林多前書 10:31"],
+  ["人活著不是單靠食物，乃是靠耶和華口裡所出的一切話。","申命記 8:3"],
+  ["並且人人吃喝，在他一切勞碌中享福，這也是神的恩賜。","傳道書 3:13"],
+  ["耶穌說：我就是生命的糧。到我這裡來的，必定不餓。","約翰福音 6:35"]
+];
+let vIdx=Math.floor(Math.random()*VERSES.length);
+function showScripture(){
+  const v=VERSES[vIdx%VERSES.length];
+  document.getElementById("scripture").innerHTML=`「${esc(v[0])}」<span class="ref-cite">— ${esc(v[1])}（和合本）</span>`;
+}
+
+// ---------- tab switching ----------
+document.getElementById("tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(!t) return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  document.getElementById("panel-"+t.dataset.tab).classList.add("active");
+  vIdx++; showScripture();
+  renderAll();
+});
+
+// ---------- shopping aggregation ----------
+function dayToTrip(dayIdx,maxTrips){ let base = dayIdx<=1?1 : dayIdx<=4?2 : 3; return Math.min(base,maxTrips); }
+function buildAgg(){
+  const ppl=state.settings.people, maxT=state.settings.trips;
+  const agg={};
+  state.week.forEach((day,di)=>{
+    ["b","l","d"].forEach(slot=>{
+      (day[slot]||[]).forEach(did=>{
+        const dish=dishById(did); if(!dish) return;
+        dish.ingredients.forEach(ig=>{
+          const trip = ig.staple ? "常備" : String(dayToTrip(di,maxT));
+          const key=ig.name+"|"+trip;
+          if(!agg[key]) agg[key]={name:ig.name,cat:ig.cat,unit:ig.unit,trip,portions:0,adlib:false};
+          if(ig.unit==="適量"||!ig.portions){ agg[key].adlib=true; }
+          else agg[key].portions += ig.portions*ppl;
+        });
+      });
+    });
+  });
+  return agg;
+}
+const TRIP_LABEL={"常備":"🟢 常備／乾貨（用完先補）","1":"🛒 第一次採購","2":"🛒 第二次採購","3":"🛒 第三次採購"};
+const TRIP_COVER={"1":"供 週一–二","2":"供 週三–五","3":"供 週六–日"};
+const PORTION_REF=`<div class="ref"><b>份量參考：</b>1 份蛋白質 ≈ 1 個掌心（約 100–120g）｜1 份蔬菜 ≈ 1 滿拳 / 1 碗｜1 份碳水 ≈ 1 拳 / 半碗飯。其他用自然單位（隻 / 個 / 條 / 磚 / 包）。「適量」由廚房按經驗準備。</div>`;
+
+// ---------- PANEL 1: weekly menu builder ----------
+function renderWeek(){
+  const s=state.settings;
+  let h=`<h2>每週餐單</h2>
+  <div class="card"><div class="row">
+    <div><label>用餐人數</label><input type="number" min="1" id="setPeople" value="${s.people}"></div>
+    <div><label>每週採購次數</label><select id="setTrips">
+      <option value="1" ${s.trips==1?"selected":""}>1 次（一次過買齊）</option>
+      <option value="2" ${s.trips==2?"selected":""}>2 次</option>
+      <option value="3" ${s.trips==3?"selected":""}>3 次（最新鮮）</option>
+    </select></div>
+  </div><p class="note" style="margin-top:8px;">由下方選好每餐菜式，第 ③ 頁會自動產生購物清單（按人數 × 份量）。</p></div>`;
+
+  state.week.forEach((day,di)=>{
+    h+=`<div class="day-card"><h4>${DAYS[di]}</h4>`;
+    ["b","l","d"].forEach(slot=>{
+      h+=`<div class="slot"><span class="slabel">${MEALS[slot]}</span>`;
+      (day[slot]||[]).forEach(did=>{
+        const dish=dishById(did);
+        h+=`<span class="chip">${esc(dish?dish.name:"(已刪除)")}<button onclick="removeDish(${di},'${slot}','${did}')">✕</button></span>`;
+      });
+      // add selector
+      h+=`<br><select onchange="addDish(${di},'${slot}',this.value);this.value='';">
+        <option value="">＋ 加入菜式…</option>`;
+      state.dishes.forEach(d=>{ h+=`<option value="${d.id}">${esc(MEALS[d.meal]||"")}｜${esc(d.name)}</option>`; });
+      h+=`</select></div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=`<div class="toolbar">
+    <button class="btn ghost" onclick="exportData()">匯出備份</button>
+    <button class="btn ghost" onclick="document.getElementById('impf').click()">匯入備份</button>
+    <input type="file" id="impf" accept="application/json" style="display:none" onchange="importData(event)">
+    <button class="btn danger" onclick="resetAll()">重設為預設</button>
+  </div>`;
+  const p=document.getElementById("panel-week"); p.innerHTML=h;
+  p.querySelector("#setPeople").addEventListener("change",e=>{state.settings.people=Math.max(1,+e.target.value||1);save();});
+  p.querySelector("#setTrips").addEventListener("change",e=>{state.settings.trips=+e.target.value;save();});
+}
+window.addDish=function(di,slot,id){ if(!id) return; if(!state.week[di][slot]) state.week[di][slot]=[]; state.week[di][slot].push(id); save(); renderWeek(); };
+window.removeDish=function(di,slot,id){ const a=state.week[di][slot]; const i=a.indexOf(id); if(i>=0)a.splice(i,1); save(); renderWeek(); };
+
+// ---------- PANEL 2: dish database ----------
+function renderDishes(){
+  let h=`<h2>餐單資料庫</h2>
+  <div class="banner">這裡是所有菜式的「食譜」。每樣食材設定「每人份量（份）」，採購時自動 × 人數。新增 / 修改菜式後，到第 ① 頁選入每週餐單即可。</div>
+  ${PORTION_REF}
+  <div class="toolbar"><button class="btn" onclick="addNewDish()">＋ 新增菜式</button></div>`;
+  ["b","l","d"].forEach(meal=>{
+    const list=state.dishes.filter(d=>d.meal===meal);
+    h+=`<h3>${MEALS[meal]}菜式（${list.length}）</h3>`;
+    list.forEach(d=>h+=dishCard(d));
+  });
+  // any dishes with other/blank meal
+  const others=state.dishes.filter(d=>!["b","l","d"].includes(d.meal));
+  if(others.length){ h+=`<h3>其他</h3>`; others.forEach(d=>h+=dishCard(d)); }
+  const p=document.getElementById("panel-dishes"); p.innerHTML=h;
+  bindDishEvents(p);
+}
+function dishCard(d){
+  let h=`<div class="dish-card" data-did="${d.id}">
+    <div class="dhead">
+      <input data-f="name" value="${esc(d.name)}">
+      <select data-f="meal" style="width:90px">
+        ${["b","l","d"].map(m=>`<option value="${m}" ${d.meal===m?"selected":""}>${MEALS[m]}</option>`).join("")}
+      </select>
+      <button class="mini del" onclick="delDish('${d.id}')">刪除菜式</button>
+    </div>
+    <table><thead><tr><th>食材</th><th>分類</th><th>每人份量</th><th>單位</th><th>常備</th><th></th></tr></thead><tbody>`;
+  d.ingredients.forEach((ig,ii)=>{
+    h+=`<tr data-ii="${ii}">
+      <td><input data-ig="name" value="${esc(ig.name)}"></td>
+      <td><select data-ig="cat" style="width:96px">${CATS.map(c=>`<option ${c===ig.cat?"selected":""}>${c}</option>`).join("")}</select></td>
+      <td><input type="number" step="0.1" style="width:64px" data-ig="portions" value="${ig.portions}"></td>
+      <td><input style="width:60px" data-ig="unit" value="${esc(ig.unit)}"></td>
+      <td style="text-align:center"><input type="checkbox" data-ig="staple" ${ig.staple?"checked":""}></td>
+      <td><button class="mini del" onclick="delIng('${d.id}',${ii})">✕</button></td>
+    </tr>`;
+  });
+  h+=`</tbody></table><div class="toolbar"><button class="mini" onclick="addIng('${d.id}')">＋ 加食材</button></div></div>`;
+  return h;
+}
+function bindDishEvents(p){
+  p.querySelectorAll(".dish-card").forEach(card=>{
+    const did=card.dataset.did; const d=dishById(did);
+    card.querySelectorAll("[data-f]").forEach(el=>el.addEventListener("change",e=>{ d[e.target.dataset.f]=e.target.value; save(); if(e.target.dataset.f==="meal") renderDishes(); }));
+    card.querySelectorAll("tr[data-ii]").forEach(tr=>{
+      const ii=+tr.dataset.ii;
+      tr.querySelectorAll("[data-ig]").forEach(el=>el.addEventListener("change",e=>{
+        const k=e.target.dataset.ig; const ig=d.ingredients[ii];
+        if(k==="staple") ig.staple=e.target.checked;
+        else if(k==="portions") ig.portions=+e.target.value||0;
+        else ig[k]=e.target.value;
+        save();
+      }));
+    });
+  });
+}
+window.addNewDish=function(){ state.dishes.push({id:"d"+Date.now(),name:"新菜式",meal:"l",ingredients:[{name:"",cat:"蛋白質",portions:1,unit:"份",staple:false}]}); save(); renderDishes(); };
+window.delDish=function(id){ if(confirm("刪除此菜式？")){ state.dishes=state.dishes.filter(d=>d.id!==id); state.week.forEach(day=>["b","l","d"].forEach(s=>{day[s]=(day[s]||[]).filter(x=>x!==id);})); save(); renderDishes(); } };
+window.addIng=function(did){ dishById(did).ingredients.push({name:"",cat:"蔬菜",portions:1,unit:"份",staple:false}); save(); renderDishes(); };
+window.delIng=function(did,ii){ dishById(did).ingredients.splice(ii,1); save(); renderDishes(); };
+
+// ---------- PANEL 3: shopping list ----------
+function renderShopping(){
+  const ppl=state.settings.people, maxT=state.settings.trips;
+  const agg=buildAgg();
+  const order=["常備"]; for(let i=1;i<=maxT;i++) order.push(String(i));
+  const byTrip={}; order.forEach(t=>byTrip[t]=[]);
+  Object.values(agg).forEach(a=>{ if(byTrip[a.trip]) byTrip[a.trip].push(a); });
+  let total=0,done=0;
+  Object.values(agg).forEach(a=>{ total++; if(state.shopping[a.name+"|"+a.trip]) done++; });
+  let h=`<h2>購物清單（${ppl} 人份）</h2>
+  <div class="banner">由「每週餐單」自動產生：份量＝菜式食材份量 × ${ppl} 人。買到就打勾；🐟 鮮魚／葉菜最接近煮食日才買最新鮮。</div>
+  ${PORTION_REF}
+  <div class="summary">
+    <div class="stat"><div class="n">${done}/${total}</div><div class="l">已購買</div></div>
+    <div class="stat"><div class="n">${ppl}</div><div class="l">人數</div></div>
+    <div class="stat"><div class="n">${maxT}</div><div class="l">採購次數</div></div>
+  </div>
+  <div class="toolbar"><button class="btn ghost" onclick="clearChecks()">清除勾選</button><button class="btn ghost" onclick="window.print()">列印</button></div>`;
+  order.forEach(t=>{
+    const list=byTrip[t]; if(!list||!list.length) return;
+    h+=`<div class="trip-head"><span class="badge">${TRIP_LABEL[t]}</span>`;
+    if(TRIP_COVER[t]&&t!=="常備") h+=`<span class="note">${TRIP_COVER[t]}</span>`;
+    h+=`</div><div class="card" style="padding:6px 14px;">`;
+    CATS.forEach(cat=>{
+      const items=list.filter(x=>x.cat===cat).sort((a,b)=>a.name.localeCompare(b.name)); if(!items.length) return;
+      items.forEach(a=>{
+        const k=a.name+"|"+a.trip; const ck=!!state.shopping[k];
+        const fresh=/魚|三文魚|魚柳/.test(a.name);
+        const qty = a.adlib && !a.portions ? "適量" : round(a.portions)+" "+esc(a.unit);
+        h+=`<div class="check-item ${ck?"done":""}">
+          <input type="checkbox" data-k="${esc(k)}" ${ck?"checked":""}>
+          <label>${fresh?"🐟 ":""}${esc(a.name)} <span class="cat-tag">${cat}</span></label>
+          <span class="qty">${qty}</span></div>`;
+      });
+    });
+    h+=`</div>`;
+  });
+  if(total===0) h+=`<div class="card note">未選任何菜式。請到第 ① 頁加入每週餐單。</div>`;
+  const p=document.getElementById("panel-shopping"); p.innerHTML=h;
+  p.querySelectorAll("input[data-k]").forEach(c=>c.addEventListener("change",e=>{ state.shopping[e.target.dataset.k]=e.target.checked; save(); renderShopping(); }));
+}
+window.clearChecks=function(){ if(confirm("清除所有勾選？")){state.shopping={};save();renderShopping();} };
+
+// ---------- PANEL 4: inventory (staples only) ----------
+function renderInventory(){
+  const ppl=state.settings.people;
+  const agg=buildAgg();
+  const staples=Object.values(agg).filter(a=>a.trip==="常備").sort((a,b)=>a.name.localeCompare(b.name));
+  let needCount=0;
+  staples.forEach(a=>{ if(!a.adlib){ const stock=state.inventory[a.name]||0; if(stock<round(a.portions)) needCount++; } });
+  let h=`<h2>乾貨庫存提醒</h2>
+  <div class="banner">只追蹤<b>乾貨／常備</b>（米、麵、油、調味、雞蛋等可儲存的）。新鮮食材每次買新鮮，毋須記庫存。輸入現有庫存，App 對比一週所需自動提示補貨。</div>
+  <div class="summary">
+    <div class="stat"><div class="n" style="color:${needCount?'var(--warn)':'var(--ok)'}">${needCount}</div><div class="l">需補貨</div></div>
+    <div class="stat"><div class="n">${staples.length}</div><div class="l">乾貨種類</div></div>
+  </div>
+  <div class="toolbar"><button class="btn ghost" onclick="window.print()">列印</button></div>
+  <div class="card"><table><thead><tr><th>食材</th><th>分類</th><th>一週需要</th><th>現有庫存</th><th>狀態</th></tr></thead><tbody>`;
+  if(!staples.length) h+=`<tr><td colspan="5" class="note" style="text-align:center;padding:16px;">未有常備食材。可在「餐單資料庫」把食材剔選為「常備」。</td></tr>`;
+  staples.forEach(a=>{
+    const need=round(a.portions);
+    const stock=state.inventory[a.name]||0;
+    let status;
+    if(a.adlib && !a.portions){ status=`<span class="pill ok">適量備用</span>`; }
+    else { const ok=stock>=need; status= ok?`<span class="pill ok">充足</span>`:`<span class="pill need">需補 ${round(need-stock)} ${esc(a.unit)}</span>`; }
+    const needTxt = a.adlib && !a.portions ? "適量" : need+" "+esc(a.unit);
+    h+=`<tr><td>${esc(a.name)}</td><td><span class="cat-tag">${esc(a.cat)}</span></td>
+      <td>${needTxt}</td>
+      <td><input type="number" step="0.1" style="width:78px" data-inv="${esc(a.name)}" value="${stock}"> ${esc(a.unit)}</td>
+      <td>${status}</td></tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  const p=document.getElementById("panel-inventory"); p.innerHTML=h;
+  p.querySelectorAll("input[data-inv]").forEach(el=>el.addEventListener("change",e=>{ state.inventory[e.target.dataset.inv]=+e.target.value||0; save(); renderInventory(); }));
+}
+
+// ---------- PANEL 5: ratings ----------
+function weekMealList(){
+  const out=[];
+  state.week.forEach((day,di)=>["b","l","d"].forEach(slot=>(day[slot]||[]).forEach(did=>{
+    const dish=dishById(did); if(dish) out.push({di,slot,day:DAYS[di],meal:slot,dishId:did,dishName:dish.name});
+  })));
+  return out;
+}
+function renderRatings(){
+  let h=`<h2>餐膳評分</h2>
+  <div class="banner">學員為每餐評分：<b>喜好度</b>（幾鍾意）同<b>飽足感</b>（食完幾飽足）。用作了解口味同份量是否足夠。</div>`;
+  const list=weekMealList();
+  let opts=list.map((m,i)=>`<option value="${i}">${esc(m.day)} ${MEALS[m.meal]}：${esc(m.dishName.slice(0,22))}</option>`).join("");
+  h+=`<div class="card"><h3>新增評分</h3>
+    <div class="row"><div style="flex:2;min-width:220px;"><label>選擇餐膳</label><select id="rMeal">${opts}</select></div>
+    <div><label>代號（保障私隱，例：學員 A01）</label><input id="rBy" placeholder="例：A01"></div></div>
+    <div class="row" style="margin-top:10px;">
+      <div><label>喜好度（1–5）</label><div class="stars" id="rPref" data-v="0">☆☆☆☆☆</div></div>
+      <div><label>飽足感（1–5）</label><div class="stars" id="rSat" data-v="0">☆☆☆☆☆</div></div>
+      <div style="flex:2;min-width:200px;"><label>意見/備註</label><input id="rComment" placeholder="例：好味，想多啲飯"></div></div>
+    <div class="toolbar"><button class="btn" onclick="addRating()">儲存評分</button></div></div>`;
+  // averages
+  const agg={};
+  state.ratings.forEach(r=>{const key=r.dishName;(agg[key]=agg[key]||{name:key,pref:[],sat:[]});agg[key].pref.push(r.pref);agg[key].sat.push(r.sat);});
+  const arr=Object.values(agg);
+  if(arr.length){
+    h+=`<div class="card"><h3>各菜式平均分</h3><table><thead><tr><th>菜式</th><th>平均喜好</th><th>平均飽足</th><th>次數</th></tr></thead><tbody>`;
+    const avg=a=>round(a.reduce((x,y)=>x+y,0)/a.length);
+    arr.sort((a,b)=>avg(b.pref)-avg(a.pref)).forEach(a=>{h+=`<tr><td>${esc(a.name.slice(0,30))}</td><td>⭐ ${avg(a.pref)}</td><td>🍚 ${avg(a.sat)}</td><td>${a.pref.length}</td></tr>`;});
+    h+=`</tbody></table></div>`;
+  }
+  if(state.ratings.length){
+    h+=`<div class="card"><h3>評分記錄</h3><table><thead><tr><th>日期</th><th>餐膳</th><th>姓名</th><th>喜好</th><th>飽足</th><th>意見</th><th></th></tr></thead><tbody>`;
+    state.ratings.slice().reverse().forEach(r=>{h+=`<tr><td class="note">${esc(r.date||"")}</td><td>${esc(r.day||"")} ${MEALS[r.meal]||""}<br><span class="note">${esc((r.dishName||"").slice(0,22))}</span></td><td>${esc(r.by||"-")}</td><td>${"⭐".repeat(r.pref)}</td><td>${"🍚".repeat(r.sat)}</td><td>${esc(r.comment||"")}</td><td><button class="mini del" onclick="delRating('${r.id}')">✕</button></td></tr>`;});
+    h+=`</tbody></table></div>`;
+  }
+  const p=document.getElementById("panel-ratings"); p.innerHTML=h;
+  setupStars(p.querySelector("#rPref")); setupStars(p.querySelector("#rSat"));
+}
+function setupStars(el){ if(!el) return; el.addEventListener("click",e=>{const r=el.getBoundingClientRect();const v=Math.min(5,Math.max(1,Math.ceil((e.clientX-r.left)/(r.width/5))));el.dataset.v=v;el.textContent="★".repeat(v)+"☆".repeat(5-v);}); }
+window.addRating=function(){
+  const p=document.getElementById("panel-ratings"); const list=weekMealList();
+  const m=list[+p.querySelector("#rMeal").value]; if(!m){alert("請先在第①頁選入餐單");return;}
+  const pref=+p.querySelector("#rPref").dataset.v, sat=+p.querySelector("#rSat").dataset.v;
+  if(!pref||!sat){alert("請為喜好度同飽足感各打分（1–5）");return;}
+  state.ratings.push({id:"r"+Date.now(),day:m.day,meal:m.meal,dishName:m.dishName,pref,sat,comment:p.querySelector("#rComment").value,by:p.querySelector("#rBy").value,date:new Date().toLocaleDateString("zh-TW")});
+  save(); renderRatings();
+};
+window.delRating=function(id){ state.ratings=state.ratings.filter(r=>r.id!==id); save(); renderRatings(); };
+
+// ---------- utils ----------
+window.exportData=function(){const b=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="備餐助手_備份_"+new Date().toISOString().slice(0,10)+".json";a.click();};
+window.importData=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const s=JSON.parse(r.result);if(s.dishes&&s.week){state=s;save();renderAll();alert("已匯入備份");}else alert("檔案格式不正確");}catch(e){alert("讀取失敗");}};r.readAsText(f);};
+window.resetAll=function(){ if(confirm("重設所有資料為預設？（會清除你的修改）")){ state=defaultState(); save(); renderAll(); } };
+
+// ---------- PANEL 6: principles & encouragement ----------
+function renderPrinciples(){
+  const h=`<h2>理念 &amp; 鼓勵</h2>
+  <div class="banner">「生命重整」相信：身體得著好的滋養，是身、心、靈整全康復的一部分。怎樣吃、吃什麼，都可以成為祝福。</div>
+
+  <div class="card">
+    <h3>一日三餐的「四大核心元素」</h3>
+    <p><b>1. 神經修復優質蛋白質</b> — 大腦的建築材料，提供色胺酸、酪胺酸，修復神經、穩定情緒。<br>
+    <span class="note">雞、魚（Omega-3）、蛋、瘦肉、豆腐、豆類、堅果。</span></p>
+    <p><b>2. 低 GI 複合碳水</b> — 血糖的穩定錨，緩慢釋放能量，避免渴求與情緒波動。<br>
+    <span class="note">糙米、五穀飯、番薯、南瓜、山藥、蕎麥麵；極致控糖可用椰菜花飯。</span></p>
+    <p><b>3. 抗發炎高纖蔬菜</b> — 身體的清道夫，跨越血腦屏障保護大腦，透過腸腦軸優化情緒。<br>
+    <span class="note">西蘭花、深綠葉菜、菇菌、海帶、彩椒、木耳、秋葵。</span></p>
+    <p><b>4. 核心好油脂與神經香料</b> — 修復神經髓鞘的潤滑油，降低發炎。<br>
+    <span class="note">特級初榨橄欖油、牛油果、深海魚油、芝麻；薑黃＋黑胡椒、薑、蒜、味噌。</span></p>
+  </div>
+
+  <div class="card">
+    <h3>「211 餐盤」黃金比例</h3>
+    <p>將盤子分四等份，毋須磅重或計卡路里：</p>
+    <p>🥦 <b>一半</b>：抗發炎蔬菜　｜　🍗 <b>四分一</b>：優質蛋白質　｜　🍠 <b>四分一</b>：低 GI 碳水</p>
+    <h3 style="margin-top:16px;">進食順序：水 &gt; 肉 &gt; 菜 &gt; 飯 &gt; 果</h3>
+    <p class="note">1. 餐前飲水（約 500cc）激活副交感神經　→　2. 先吃蛋白質　→　3. 再吃蔬菜　→　4. 最後吃碳水，使血糖上升更平緩。</p>
+  </div>
+
+  <div class="card">
+    <h3>80／20 平衡：健康不等於受苦</h3>
+    <p>80% 時間吃原型、滋養的食物；20% 時間容許享受（節日、家庭聚餐）。重點是<b>進度，而非完美</b>。一餐放鬆之後，下一餐如常回到軌道即可。</p>
+    <h3 style="margin-top:16px;">怎樣吃：感恩 + 5 個深呼吸</h3>
+    <p>每餐前，<b>帶著感恩的心，做 5 個深呼吸</b>。</p>
+    <p class="note">深呼吸幫助神經系統平靜下來，進入「休息與消化」狀態，也讓我們專注於眼前的食物。然後細嚼慢嚥，食到約七分飽。</p>
+  </div>
+
+  <div class="card">
+    <h3>🙏 食物與供應的鼓勵經文</h3>
+    <p class="ref" style="border-color:var(--sage);background:#f1f6f3;">
+    「我們日用的飲食，今日賜給我們。」<span class="note">— 馬太福音 6:11</span></p>
+    <p class="ref" style="border-color:var(--sage);background:#f1f6f3;">
+    「凡神所造的物都是好的；若感謝著領受，就沒有一樣可棄的。」<span class="note">— 提摩太前書 4:4</span></p>
+    <p class="ref" style="border-color:var(--sage);background:#f1f6f3;">
+    「你們要嘗嘗主恩的滋味，便知道他是美善；投靠他的人有福了！」<span class="note">— 詩篇 34:8</span></p>
+    <p class="ref" style="border-color:var(--sage);background:#f1f6f3;">
+    「所以，你們或吃或喝，無論做甚麼，都要為榮耀神而行。」<span class="note">— 哥林多前書 10:31</span></p>
+    <p class="ref" style="border-color:var(--sage);background:#f1f6f3;">
+    「人活著不是單靠食物，乃是靠耶和華口裡所出的一切話。」<span class="note">— 申命記 8:3</span></p>
+    <p class="ref" style="border-color:var(--sage);background:#f1f6f3;">
+    「並且人人吃喝，在他一切勞碌中享福，這也是神的恩賜。」<span class="note">— 傳道書 3:13</span></p>
+    <p class="ref" style="border-color:var(--gold);">
+    「耶穌說：我就是生命的糧。到我這裡來的，必定不餓。」<span class="note">— 約翰福音 6:35　願我們在飲食中，更認識那位供應一切的主。</span></p>
+    <p class="note" style="margin-top:8px;">經文採用和合本（公有領域）。</p>
+  </div>
+
+  <div class="card" style="text-align:center;background:#f1f6f3;">
+    <p style="font-size:1.05em;color:var(--teal);font-weight:700;">願你在每一餐中，經歷身、心、靈的重整與更新。</p>
+    <p class="note">生命重整飲食計劃 · 得基輔康會（DACARS）｜恩慈之家</p>
+  </div>
+
+  <div class="card">
+    <h3>關於 About</h3>
+    <p><b>生命重整 ｜ 健康備餐助手</b>（Life Reset · Healthy Meal Prep）</p>
+    <p class="note">版本 v2.0　·　由「生命重整飲食計劃」開發，作戒癮康復及健康生活之用。</p>
+    <p style="margin-top:8px;">機構：<b>得基輔康會（DACARS）｜恩慈之家</b><br>
+    網站：<a href="https://dacars.org" target="_blank" rel="noopener">dacars.org</a>　·　電郵：admin@dacars.org<br>
+    WhatsApp：+852 5694 2272</p>
+    <p class="note" style="margin-top:8px;">本工具為健康教育及備餐管理用途，不取代醫療或營養師的個別建議。經文採用和合本（公有領域）。</p>
+  </div>`;
+  document.getElementById("panel-principles").innerHTML=h;
+}
+
+function renderAll(){ renderWeek(); renderDishes(); renderShopping(); renderInventory(); renderRatings(); renderPrinciples(); }
+renderAll();
+showScripture();
+</script>
+</body>
+</html>
